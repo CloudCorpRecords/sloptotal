@@ -2,22 +2,21 @@ import json
 import logging
 
 import httpx
-
-from fastapi import APIRouter, Request, Form, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi import APIRouter, Form, HTTPException, Request
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from starlette.responses import StreamingResponse
 
-from app.config import SCORE_CLEAN, SCORE_LIKELY_AI, SCORE_LOW_RISK, SCORE_SUSPICIOUS
-from app.schemas import WebAnalyzeRequest
 from app.analyzer import (
-    lane_for,
-    start_analysis,
-    wait_until_done,
-    get_report,
-    stream_results,
     get_engine_list,
     get_engine_list_rich,
+    get_report,
+    lane_for,
+    start_analysis,
+    stream_results,
+    wait_until_done,
 )
+from app.config import SCORE_CLEAN, SCORE_LIKELY_AI, SCORE_LOW_RISK, SCORE_SUSPICIOUS
+from app.schemas import WebAnalyzeRequest
 from app.scraper import extract_text_from_url
 
 log = logging.getLogger("sloptotal.routes.web")

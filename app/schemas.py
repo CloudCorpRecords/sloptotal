@@ -1,7 +1,8 @@
-from pydantic import BaseModel, Field, computed_field
+from datetime import datetime
 from enum import Enum
 from typing import Literal, Optional
-from datetime import datetime
+
+from pydantic import BaseModel, Field, computed_field
 
 EXAMPLE_URL = "https://example.com"
 EXAMPLE_TEXT = (
@@ -101,9 +102,9 @@ def score_to_verdict_str(score: float) -> str:
     """
     from app.config import (
         SCORE_CLEAN,
+        SCORE_LIKELY_AI,
         SCORE_LOW_RISK,
         SCORE_SUSPICIOUS,
-        SCORE_LIKELY_AI,
     )
 
     if score <= SCORE_CLEAN:

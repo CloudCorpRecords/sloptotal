@@ -1,10 +1,12 @@
 import math
 import threading
+
 import torch
 from transformers import GPT2LMHeadModel, GPT2TokenizerFast
+
 from app.engines.base import BaseEngine
-from app.schemas import EngineResult, score_to_engine_verdict
 from app.model_pool import LOAD_LOCK as _load_lock
+from app.schemas import EngineResult, score_to_engine_verdict
 
 # DistilGPT-2 as a second, smaller model
 _distil_model = None
@@ -49,7 +51,7 @@ class CrossPerplexityEngine(BaseEngine):
 
     def analyze(self, text: str) -> EngineResult:
         try:
-            from app.engines.gpt2_cache import get_gpt2_outputs, get_distil_outputs
+            from app.engines.gpt2_cache import get_distil_outputs, get_gpt2_outputs
 
             gpt2 = get_gpt2_outputs(text)
             distil = get_distil_outputs(text)

@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 log = logging.getLogger("sloptotal.routes.queue")

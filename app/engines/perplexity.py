@@ -1,11 +1,13 @@
 import math
 import threading
+
 import torch
 from transformers import GPT2LMHeadModel, GPT2TokenizerFast
-from app.engines.base import BaseEngine
-from app.schemas import EngineResult, score_to_engine_verdict
+
 from app.config import GPT2_MODEL
+from app.engines.base import BaseEngine
 from app.model_pool import LOAD_LOCK as _load_lock
+from app.schemas import EngineResult, score_to_engine_verdict
 
 _model = None
 _tokenizer = None

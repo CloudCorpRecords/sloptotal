@@ -1,13 +1,14 @@
 import torch
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
 from app.engines.base import (
+    LARGE_MODEL_MAX_WINDOWS,
     BaseEngine,
     FairLock,
-    LARGE_MODEL_MAX_WINDOWS,
     score_in_windows,
 )
-from app.schemas import EngineResult, score_to_engine_verdict
 from app.model_pool import LOAD_LOCK as _load_lock
+from app.schemas import EngineResult, score_to_engine_verdict
 
 _MODEL_NAME = "hyunseoki/ReMoDetect-deberta"
 _model = None

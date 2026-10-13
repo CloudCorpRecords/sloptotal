@@ -1,17 +1,11 @@
+import asyncio
 import logging
 import os
 import uuid
-import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from typing import AsyncGenerator
 
-from app.engine_status import mark_failed, mark_loaded
-from app.schemas import (
-    AnalysisReport,
-    EngineResult,
-    score_to_verdict_str,
-    score_to_engine_verdict,
-)
+from app.cache import compute_text_hash, is_cacheable_report
 from app.calibration import CALIBRATION_VERSION, calibrated_score, quick_score
 from app.config import (
     CACHE_ENABLED,
@@ -19,43 +13,53 @@ from app.config import (
     QUICK_AI_MIN,
     QUICK_CLEAN_MAX,
 )
-from app.cache import compute_text_hash, is_cacheable_report
-from app.language import count_words
 from app.database import (
-    create_report,
-    get_report as db_get_report,
-    get_report_by_hash,
-    get_pending_report_by_hash,
-    get_recent_reports as db_get_recent_reports,
-    mark_report_complete,
-    insert_engine_result_sync,
-    update_report_score_sync,
     cleanup_connections,
+    create_report,
+    get_pending_report_by_hash,
+    get_report_by_hash,
+    insert_engine_result_sync,
     log_scan_sync,
+    mark_report_complete,
+    update_report_score_sync,
 )
-from app.engines.perplexity import PerplexityEngine
+from app.database import (
+    get_recent_reports as db_get_recent_reports,
+)
+from app.database import (
+    get_report as db_get_report,
+)
+from app.engine_status import mark_failed, mark_loaded
+from app.engines.binoculars import BinocularsEngine
 from app.engines.burstiness import BurstinessEngine
-from app.engines.linguistic import LinguisticEngine
-from app.engines.structural import StructuralEngine
-from app.engines.vocabulary import VocabularyEngine
-from app.engines.formulaic import FormulaicEngine
-from app.engines.readability import ReadabilityEngine
-from app.engines.sentiment import SentimentEngine
-from app.engines.classifier_openai import ClassifierOpenAIEngine
+from app.engines.classifier_bert_raid import ClassifierBERTRaidEngine
 from app.engines.classifier_chatgpt import ClassifierChatGPTEngine
-from app.engines.cross_perplexity import CrossPerplexityEngine
-from app.engines.classifier_remodetect import ClassifierReMoDetectEngine
-from app.engines.classifier_fakespot import ClassifierFakespotEngine
+from app.engines.classifier_desklib import ClassifierDesklibEngine
 from app.engines.classifier_e5 import ClassifierE5Engine
-from app.engines.gltr import GLTREngine
-from app.engines.log_rank import LogRankEngine
+from app.engines.classifier_fakespot import ClassifierFakespotEngine
+from app.engines.classifier_openai import ClassifierOpenAIEngine
+from app.engines.classifier_remodetect import ClassifierReMoDetectEngine
+from app.engines.classifier_superannotate import ClassifierSuperAnnotateEngine
+from app.engines.classifier_tmr import ClassifierTMREngine
+from app.engines.cross_perplexity import CrossPerplexityEngine
 from app.engines.diveye import DivEyeEngine
 from app.engines.fast_detectgpt import FastDetectGPTEngine
-from app.engines.binoculars import BinocularsEngine
-from app.engines.classifier_tmr import ClassifierTMREngine
-from app.engines.classifier_bert_raid import ClassifierBERTRaidEngine
-from app.engines.classifier_desklib import ClassifierDesklibEngine
-from app.engines.classifier_superannotate import ClassifierSuperAnnotateEngine
+from app.engines.formulaic import FormulaicEngine
+from app.engines.gltr import GLTREngine
+from app.engines.linguistic import LinguisticEngine
+from app.engines.log_rank import LogRankEngine
+from app.engines.perplexity import PerplexityEngine
+from app.engines.readability import ReadabilityEngine
+from app.engines.sentiment import SentimentEngine
+from app.engines.structural import StructuralEngine
+from app.engines.vocabulary import VocabularyEngine
+from app.language import count_words
+from app.schemas import (
+    AnalysisReport,
+    EngineResult,
+    score_to_engine_verdict,
+    score_to_verdict_str,
+)
 
 log = logging.getLogger("sloptotal.analyzer")
 
@@ -703,8 +707,8 @@ async def paragraph_analyze(text: str) -> dict:
     Detects mixed human/AI content (e.g. human intro + AI body).
     Returns per-paragraph scores + overall summary.
     """
-    import time
     import re
+    import time
 
     start_time = time.perf_counter()
 
@@ -998,6 +1002,7 @@ def compute_gpt2_signals(text: str) -> dict | None:
     import math
     import re
     import statistics
+
     import torch
 
     try:
