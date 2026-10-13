@@ -1,7 +1,7 @@
 import threading
 from abc import ABC, abstractmethod
 from collections import deque
-from typing import Callable
+from collections.abc import Callable
 
 from app.schemas import EngineResult
 

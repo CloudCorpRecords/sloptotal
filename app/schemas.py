@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, computed_field
 from enum import Enum
-from typing import Literal, Optional
+from typing import Literal
 from datetime import datetime
 
 EXAMPLE_URL = "https://example.com"
@@ -44,8 +44,8 @@ class FeedbackRequest(BaseModel):
 
 
 class AnalyzeRequest(BaseModel):
-    url: Optional[str] = None
-    text: Optional[str] = None
+    url: str | None = None
+    text: str | None = None
 
     model_config = {
         "json_schema_extra": {
@@ -67,7 +67,7 @@ class AnalysisReport(BaseModel):
     overall_verdict: str
     engines_flagged: int
     engines_total: int
-    input_chars: Optional[int] = None
+    input_chars: int | None = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     @computed_field

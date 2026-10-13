@@ -3,7 +3,7 @@ import os
 import uuid
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 from app.engine_status import mark_failed, mark_loaded
 from app.schemas import (
