@@ -2,39 +2,42 @@ import asyncio
 import logging
 
 import httpx
-
 from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse
 
-from app.schemas import (
-    FeedbackRequest,
-    AnalyzeRequest,
-    SiteScanRequest,
-    SnippetBatchRequest,
-    BatchUrlRequest,
-    UrlScanRequest,
-)
 from app.analyzer import (
-    analyze_text,
-    get_report,
-    get_recent_reports,
-    get_engine_list_rich,
-    quick_analyze_text,
-    quick_analyze_batch,
-    scan_snippets_batch,
-    paragraph_analyze,
-    analyze_page_structure,
+    _analyze_text_inner,
     _blend_fakespot_structural,
     _quick_analyze_text_inner,
     _scan_snippets_batch_inner,
-    _analyze_text_inner,
+    analyze_page_structure,
+    analyze_text,
+    get_engine_list_rich,
+    get_recent_reports,
+    get_report,
     lane_for,
+    paragraph_analyze,
+    quick_analyze_batch,
+    quick_analyze_text,
+    scan_snippets_batch,
 )
+from app.config import MIN_TEXT_LENGTH
 from app.database import (
     FeedbackNotReady,
     get_scan_stats,
     log_scan_sync,
     save_report_feedback,
+)
+from app.documents import MAX_UPLOAD_BYTES, extract_document_text
+from app.language import count_words
+from app.page_classifier import classify_page_type
+from app.schemas import (
+    AnalyzeRequest,
+    BatchUrlRequest,
+    FeedbackRequest,
+    SiteScanRequest,
+    SnippetBatchRequest,
+    UrlScanRequest,
 )
 from app.scraper import (
     _extract_text_from_html,
@@ -42,11 +45,7 @@ from app.scraper import (
     extract_text_with_metadata,
     fetch_page,
 )
-from app.config import MIN_TEXT_LENGTH
-from app.language import count_words
 from app.site_fingerprints import detect_builders
-from app.documents import MAX_UPLOAD_BYTES, extract_document_text
-from app.page_classifier import classify_page_type
 
 log = logging.getLogger("sloptotal.routes.api")
 
@@ -201,8 +200,8 @@ async def api_scan_urls(req: UrlScanRequest):
     3. Non-scoreable pages → info response (grey badge)
     4. Scoreable pages → Fakespot (500ch) + structural (4000ch) → blend → scored badge
     """
-    import time
     import hashlib
+    import time
 
     start_time = time.perf_counter()
 

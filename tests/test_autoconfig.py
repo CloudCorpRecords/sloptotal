@@ -1,4 +1,5 @@
 import pytest
+
 from app.autoconfig import choose_profile, compute_config
 
 

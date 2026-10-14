@@ -1,14 +1,15 @@
 import torch
 import torch.nn as nn
-from transformers import AutoTokenizer, AutoConfig, AutoModel, PreTrainedModel
+from transformers import AutoConfig, AutoModel, AutoTokenizer, PreTrainedModel
+
 from app.engines.base import (
+    LARGE_MODEL_MAX_WINDOWS,
     BaseEngine,
     FairLock,
-    LARGE_MODEL_MAX_WINDOWS,
     score_in_windows,
 )
-from app.schemas import EngineResult, score_to_engine_verdict
 from app.model_pool import LOAD_LOCK as _load_lock
+from app.schemas import EngineResult, score_to_engine_verdict
 
 _MODEL_NAME = "desklib/ai-text-detector-v1.01"
 _model = None

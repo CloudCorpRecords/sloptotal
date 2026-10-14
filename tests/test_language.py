@@ -130,6 +130,81 @@ def test_finnish_czech_and_hungarian_are_unsupported(lang):
     )
 
 
+# Issue #52: Romanian, Indonesian, Vietnamese, Swedish and Danish have function
+# words so they are reported as unsupported, but the calibration has no fit for
+# them, so the 16 languages in SAMPLES do not cover them. Catalan is below.
+UNSUPPORTED_SENTENCES = {
+    "ro": (
+        "Consiliul local a aprobat planul după câteva luni de dezbateri, iar "
+        "locuitorii din cartier au spus că nimeni nu i-a întrebat despre această "
+        "decizie, care a fost luată foarte repede și fără ca ei să fie informați "
+        "din timp."
+    ),
+    "id": (
+        "Dewan kota menyetujui rencana itu setelah berbulan-bulan berdebat, dan "
+        "warga di sekitar kawasan itu mengatakan bahwa tidak ada yang bertanya "
+        "kepada mereka tentang keputusan ini, yang diambil dengan sangat cepat "
+        "dan tanpa pemberitahuan sebelumnya."
+    ),
+    "vi": (
+        "Hội đồng thành phố đã thông qua kế hoạch sau nhiều tháng tranh luận, và "
+        "người dân trong khu vực nói rằng không ai hỏi ý kiến họ về quyết định "
+        "này, một quyết định được đưa ra rất nhanh và không báo trước cho họ."
+    ),
+    "sv": (
+        "Kommunfullmäktige godkände planen efter flera månaders debatt, och de "
+        "boende i området sa att ingen hade frågat dem något om beslutet, som "
+        "fattades mycket snabbt och utan att de hade fått veta det i förväg."
+    ),
+    "da": (
+        "Byrådet godkendte planen efter flere måneders debat, og beboerne i "
+        "området sagde, at ingen havde spurgt dem om noget vedrørende "
+        "beslutningen, som blev truffet meget hurtigt og uden at de havde fået "
+        "besked på forhånd."
+    ),
+}
+
+
+@pytest.mark.parametrize("lang", sorted(UNSUPPORTED_SENTENCES))
+def test_romanian_indonesian_vietnamese_swedish_and_danish_are_detected(lang):
+    text = UNSUPPORTED_SENTENCES[lang]
+    assert count_words(text) >= 25
+    assert detect_language(text) == lang
+
+
+@pytest.mark.parametrize("lang", sorted(UNSUPPORTED_SENTENCES))
+def test_romanian_indonesian_vietnamese_swedish_and_danish_are_unsupported(lang):
+    """They have no fit, so they must be reported rather than scored."""
+    assert language_support(detect_language(UNSUPPORTED_SENTENCES[lang])) == (
+        "unsupported"
+    )
+
+
+CATALAN_SENTENCE = (
+    "El consell municipal va aprovar el pla després de diversos mesos de "
+    "debat, i els veïns del barri van dir que ningú no els havia preguntat "
+    "res sobre aquesta decisió, que es va prendre molt de pressa i sense "
+    "avisar-los amb temps."
+)
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "Catalan reads as Spanish, a supported language, so it is scored under "
+        "the Spanish calibration instead of being reported as unsupported. "
+        "FUNCTION_WORDS['es'] holds el, de, que, no, es and del, which Catalan "
+        "uses as often, and FUNCTION_WORDS['ca'] only holds forms Spanish lacks: "
+        "6 of 8 varied Catalan sentences were detected as es. Remove this "
+        "marker when the Catalan list is fixed."
+    ),
+)
+def test_catalan_is_detected_and_unsupported():
+    assert count_words(CATALAN_SENTENCE) >= 25
+    assert detect_language(CATALAN_SENTENCE) == "ca"
+    assert language_support("ca") == "unsupported"
+
+
 def test_czech_is_not_mistaken_for_polish():
     """The regression that mattered: pl is calibrated, so a wrong pl here meant
     Czech text was scored under the Polish fit instead of flagged."""

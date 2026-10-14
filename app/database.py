@@ -3,15 +3,15 @@
 import json
 import logging
 import os
-import threading
 import sqlite3
+import threading
 from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Any
 
 import aiosqlite
 
-from app.config import DATABASE_PATH, DATA_DIR, DB_TIMEOUT, DB_BUSY_TIMEOUT
+from app.config import DATA_DIR, DATABASE_PATH, DB_BUSY_TIMEOUT, DB_TIMEOUT
 from app.schemas import AnalysisReport, EngineResult, Verdict
 
 log = logging.getLogger("sloptotal.database")

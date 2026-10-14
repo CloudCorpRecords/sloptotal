@@ -1,8 +1,9 @@
 import torch
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
 from app.engines.base import BaseEngine, FairLock, score_in_windows
-from app.schemas import EngineResult, score_to_engine_verdict
 from app.model_pool import LOAD_LOCK as _load_lock
+from app.schemas import EngineResult, score_to_engine_verdict
 
 _MODEL_NAME = "Hello-SimpleAI/chatgpt-detector-roberta"
 _model = None
